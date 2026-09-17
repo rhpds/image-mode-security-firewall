@@ -96,8 +96,35 @@ approval_checklist:
     catalog_gap: ""
     design_overview: ""
     module_summaries: []
-    rcars_overlap_pct: null
-    rcars_top_matches: []
+    rcars_overlap_pct: 80
+    rcars_top_matches:
+      - title: "Image Mode is the best mode"
+        ci_name: "zt-rhelbu.zt-image-mode-rh1.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-image-mode-rh1.prod"
+        relevance_score: 80
+        why_it_fits: "This lab directly covers RHEL Image Mode (bootc) and includes firewalld offline configuration as a topic; the lab's emphasis on build-time hardening workflows including SCAP compliance, FAPolicyd, and firewalld aligns closely with the request's goal of baking firewall rules into images."
+        workloads: []
+      - title: "Introduction to image mode for Red Hat Enterprise Linux"
+        ci_name: "zt-rhelbu.zt-image-mode-basics.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=zt-rhelbu.zt-image-mode-basics.prod"
+        relevance_score: 73
+        why_it_fits: "Covers RHEL image mode (bootc) fundamentals including Containerfile authoring for OS images; establishes foundational skills required before applying firewalld-specific hardening in an image mode context, but does not cover firewalld configuration at all."
+        workloads: []
+      - title: "The Definitive Red Hat Enterprise Linux 10 Hands-On Lab"
+        ci_name: "published.hol-rhel10-cnv.prod"
+        url: "https://catalog.demo.redhat.com/catalog?item=published.hol-rhel10-cnv.prod"
+        relevance_score: 64
+        why_it_fits: "Covers both RHEL Image Mode (bootc) and firewalld management across multiple modules at fundamental and intermediate levels, but the build-time firewall hardening workflow is not combined into a single focused exercise."
+        workloads:
+          - role: "agnosticv_userdata_import"
+            collection: "agnosticd.cloud_vm_workloads"
+          - role: "asset_injector"
+            collection: "rhpds.manage_host"
+          - role: "control_user"
+            collection: "agnosticd.cloud_vm_workloads"
+          - role: "lab_setup"
+            collection: "rhpds.hol_rhel10_automation"
+    catalog_gap: "No existing catalog item offers a beginner-accessible lab that specifically isolates and contrasts applying firewall rules at runtime versus baking them into a bootc image at build time. The closest match covers image mode and firewalld but as one topic among many in a broad 3-hour intermediate lab."
     rejections: []
 
   infra:
