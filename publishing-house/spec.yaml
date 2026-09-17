@@ -22,7 +22,19 @@ project:
 spec:
   title: "Securing RHEL Image Mode: Firewall Rules at Build Time"
   learning_objectives: []
-  modules: []              # [{id, title, duration_min}] — written by intake Phase 4; id is stable (e.g. module-01)
+  modules:                 # [{id, title, duration_min}] — written by intake Phase 4; id is stable (e.g. module-01)
+  - id: module-01
+    title: "Introduction to Firewall Rules in Image Mode"
+    duration_min: 5
+    status: not_started
+  - id: module-02
+    title: "Applying Firewall Rules on a Running Host"
+    duration_min: 5
+    status: not_started
+  - id: module-03
+    title: "Baking Firewall Rules into the Containerfile"
+    duration_min: 5
+    status: not_started
   environment:
     platform: ""               # ocp | rhel-vms — determines which sizing fields apply
     topology: ""               # shared-cluster | per-student | cnv-pool
@@ -79,7 +91,7 @@ tracking:
 approval_checklist:
 
   content:
-    prerequisites_verifiable: null
+    prerequisites_verifiable: false
     assessment_strategy: ""
     catalog_gap: ""
     design_overview: ""

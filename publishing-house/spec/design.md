@@ -1,89 +1,73 @@
-# [Project Title]
-
-<!-- This file is the design document for your lab or demo. -->
-<!-- Fill in each section below, or run /rhdp-publishing-house to have the intake skill help. -->
-<!-- Sections marked with [brackets] are placeholders — replace with real content. -->
-<!-- The validation gate checks for all required sections before submission. -->
+# Securing RHEL Image Mode: Firewall Rules at Build Time
 
 ## Overview
 
-[2-3 sentences on what this lab or demo is and why it exists. Then a direct description of what participants will do — specific enough that someone reading this section immediately understands the content without interpretation. No flowery language. Example: "Participants will deploy a 3-tier application on OpenShift, configure autoscaling, and troubleshoot a simulated pod failure."]
+This lab introduces firewall rule management for RHEL image mode (bootc) environments. Participants explore two complementary approaches — applying rules at runtime on a running image mode host, and baking rules directly into the Containerfile at build time — to understand why build-time hardening is the preferred practice for immutable, image-based systems. The lab is intentionally concise: three short modules that contrast the ephemeral runtime approach with the durable build-time approach, leaving participants with a clear mental model they can apply immediately.
 
 ## Target Audience
 
-- **Role:** [Data scientists, platform engineers, developers, etc.]
-- **Experience level:** [Beginner, intermediate, or advanced]
-- **What they already know:** [Existing skills and knowledge]
-- **What they don't know:** [Skills this lab teaches]
+- **Role:** Sysadmins and platform engineers
+- **Experience level:** Beginner
+- **What they already know:** Linux CLI basics, familiarity with RHEL fundamentals
+- **What they don't know:** RHEL image mode (bootc) concepts, managing firewall rules in image-based deployments
 
 ## Prerequisites
 
-- [What the learner must know or have completed before starting]
-- [Can the lab validate these automatically? Yes/No — brief explanation]
-
-<!-- If no prerequisites, write "None" -->
+- Basic Linux command-line proficiency
+- Familiarity with RHEL or a similar Linux distribution
+- No prior image mode or bootc experience required
+- Prerequisites are trust-based — no automated validation at lab start
 
 ## Learning Objectives
 
-1. [Action verb] [specific, measurable outcome]
-2. [Action verb] [specific, measurable outcome]
-3. [Action verb] [specific, measurable outcome]
-
-<!-- Scale to duration: up to 3 objectives per 45 min of content. Start with action verbs: Configure, Deploy, Create, Implement, Troubleshoot, Monitor, Scale. Each should be testable. NOT: Understand, Learn, Know. -->
+1. Apply firewall rules to a running RHEL image mode host using firewalld
+2. Bake firewall rules into a Containerfile as part of a build-time image hardening workflow
 
 ## Content Type
 
-[Lab (hands-on) or Demo (presenter-led)]
+Lab (hands-on)
 
 ## Products & Technologies
 
-- [Official Red Hat product name with version if relevant]
-- [Additional products/technologies]
-
-<!-- Use official names: "Red Hat OpenShift", not "OpenShift". List upstream projects separately. -->
+- Red Hat Enterprise Linux (image mode / bootc)
+- firewalld
 
 ## Module Map
 
 | Module | Title | Duration |
 |--------|-------|----------|
-| 1 | [Module title] | [XX min] |
-| 2 | [Module title] | [XX min] |
-| — | **Total hands-on** | **[X hours]** |
-| — | Intro / presentation | [~XX min] |
-| — | **Total lab** | **[~X hours]** |
-
-<!-- Each module 10-30 min. Total: lab 1-4 hours, demo 15-45 min. Modules should build on each other. -->
+| 1 | Introduction to Firewall Rules in Image Mode | 5 min |
+| 2 | Applying Firewall Rules on a Running Host | 5 min |
+| 3 | Baking Firewall Rules into the Containerfile | 5 min |
+| — | **Total hands-on** | **15 min** |
+| — | **Total lab** | **~15 min** |
 
 ## Difficulty Level
 
-[Beginner, Intermediate, or Advanced]
+Beginner
 
 ## Environment
 
-**Learner view:** [What exists when the lab starts — pre-deployed resources, what participants see and interact with. Be specific about cluster details.]
+**Learner view:** A pre-deployed RHEL image mode host is available at lab start. Participants have terminal access and can run firewalld commands, inspect the running configuration, and modify the Containerfile used to produce the image.
 
-**Automation needed:** [Yes/No]
-
-[If yes, list what automation must provision — operators, per-user resources, sample apps, data sets.]
+**Automation needed:** Yes — a RHEL image mode host (bootc-based) must be provisioned and accessible via an in-browser terminal at lab start. A sample Containerfile must be present in the environment.
 
 ## Infrastructure Requirements
 
-- **Cloud provider:** [CNV (default), AWS, or Troshka (bare-metal/nested virt)]
-- **Cluster type:** [Multinode or SNO (Single Node OpenShift)]
-- **OCP version:** [e.g. 4.20 — minimum 4.20]
-- **Topology:** [Shared cluster, per-student, or CNV pool]
-- **Sizing:** [Node types and counts with resources — e.g., "3 control plane (16 CPU, 64GB RAM), 6 workers (8 CPU, 32GB RAM, 100GB disk)"]
-- **Automation approach:** [Ansible, GitOps (Helm + ArgoCD), or combo]
-- **AI/MaaS:** [None, MaaS (open-source model), MaaS (frontier model), or dedicated GPU — include justification if not "none"]
-- **External services:** [Named services — e.g., github.com, registry.access.redhat.com — or "None"]
-- **AAP version:** [e.g. 2.5 — only if AAP is in products; omit otherwise]
-- **Non-GA products:** [Product name + version, with access plan — or "None (all products are GA)"]
+- **Cloud provider:** TBD — confirmed in infrastructure phase
+- **Cluster type:** TBD — confirmed in infrastructure phase
+- **OCP version:** TBD — confirmed in infrastructure phase
+- **Topology:** TBD — confirmed in infrastructure phase
+- **Sizing:** TBD — confirmed in infrastructure phase
+- **Automation approach:** TBD — confirmed in infrastructure phase
+- **AI/MaaS:** TBD — confirmed in infrastructure phase
+- **External services:** TBD — confirmed in infrastructure phase
+- **AAP version:** TBD — confirmed in infrastructure phase
+- **Non-GA products:** TBD — confirmed in infrastructure phase
 
-<!-- Not all fields must be known at intake. "TBD, estimating ~X" is fine. -->
+## Assessment Strategy
 
-## Assessment Strategy (Optional)
+This is a Zero-Touch lab. Each hands-on module includes a solve/validate button:
 
-<!-- Optional — skip this section for demos or classic labs without verification. -->
-<!-- Relevant for Zero-Touch labs with solve/validate buttons or labs with automated checks. -->
-
-[If applicable: how will we know the learner successfully completed each module? Per module: verification script, solve/validate button, visible result in the UI, or automated check.]
+- **Module 2:** Validates that the specified firewall rule is active on the running host (e.g., the expected port/service is open in the active firewalld zone)
+- **Module 3:** Validates that the Containerfile includes the correct firewall rule directives and that a rebuild would produce a hardened image
