@@ -1,0 +1,11 @@
+site_name: 'Securing RHEL Image Mode: Firewall Rules at Build Time'
+docs_dir: publishing-house/spec
+nav:
+- Home: index.md
+- Design Spec: design.md
+- Modules:
+  - Module 1 - Intro: modules/module-01-intro.md
+  - Module 2 - Runtime Firewall Rules: modules/module-02-runtime-firewall-rules.md
+  - Module 3 - Build Time Firewall Rules: modules/module-03-build-time-firewall-rules.md
+plugins:
+- techdocs-core

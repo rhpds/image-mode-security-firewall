@@ -21,7 +21,9 @@ project:
 
 spec:
   title: "Securing RHEL Image Mode: Firewall Rules at Build Time"
-  learning_objectives: []
+  learning_objectives:
+    - "Apply firewall rules to a running RHEL image mode host using firewalld"
+    - "Bake firewall rules into a Containerfile as part of a build-time image hardening workflow"
   modules:                 # [{id, title, duration_min}] — written by intake Phase 4; id is stable (e.g. module-01)
   - id: module-01
     title: "Introduction to Firewall Rules in Image Mode"
@@ -100,7 +102,7 @@ approval_checklist:
 
   content:
     prerequisites_verifiable: false
-    assessment_strategy: ""
+    assessment_strategy: "Zero-Touch solve/validate buttons: Module 2 validates the specified firewall rule is active in the running bootc host's active zone; Module 3 validates that the Containerfile includes the correct firewall-offline-cmd directive."
     catalog_gap: ""
     design_overview: "This beginner-level lab teaches sysadmins and platform engineers how firewall rule management works differently in RHEL image mode (bootc) environments. Participants contrast two approaches — applying rules at runtime with firewalld versus baking them into a Containerfile at build time — to understand why build-time hardening is the durable, preferred practice for immutable image-based systems."
     module_summaries:
