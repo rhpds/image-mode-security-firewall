@@ -16,8 +16,8 @@ project:
   automation_type: "ansible"
   description: "In this hands-on lab, you will learn how to add firewall rules as part of your image hardening procedures at build-time on a bootc image."
   # content_reviewer_email and infra_reviewer_email are assigned by the RHDP team — not set by the author
-  jira_ticket: ""
-  workflow_id: ""
+  jira_ticket: "RHDPCD-1862"
+  workflow_id: "346830d5-7b8a-4529-a5ac-35533121a4ef"
 
 spec:
   title: ""
