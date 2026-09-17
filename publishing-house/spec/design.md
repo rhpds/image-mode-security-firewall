@@ -54,16 +54,14 @@ Beginner
 
 ## Infrastructure Requirements
 
-- **Cloud provider:** TBD — confirmed in infrastructure phase
-- **Cluster type:** TBD — confirmed in infrastructure phase
-- **OCP version:** TBD — confirmed in infrastructure phase
-- **Topology:** TBD — confirmed in infrastructure phase
-- **Sizing:** TBD — confirmed in infrastructure phase
-- **Automation approach:** TBD — confirmed in infrastructure phase
-- **AI/MaaS:** TBD — confirmed in infrastructure phase
-- **External services:** TBD — confirmed in infrastructure phase
-- **AAP version:** TBD — confirmed in infrastructure phase
-- **Non-GA products:** TBD — confirmed in infrastructure phase
+- **Cloud provider:** CNV
+- **Topology:** Per-student
+- **Sizing:** 1 RHEL build host / package mode per student (4 vCPU, 16GB RAM, 100GB disk) — runs a nested virt bootc guest
+- **Automation approach:** Ansible
+- **AI/MaaS:** None
+- **External services:** `registry.redhat.io` (base bootc image), `cdn.redhat.com` (RPM packages for build host)
+- **AAP version:** N/A
+- **Non-GA products:** None (all products are GA)
 
 ## Assessment Strategy
 
