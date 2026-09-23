@@ -1,6 +1,8 @@
 = Baking Firewall Rules into the Containerfile
 
-The runtime rule from Module 2 works, but it lives only on that one host. Now you'll do it the image-mode-native way: add the firewall rule to the Containerfile, rebuild the image, and deploy it to the running bootc host — so the port is defined in the image and present on every host built from it.
+The runtime rule from Module 2 works, but it lives only on that one host. Now you'll do it the image-mode-native way: add a firewall rule to the Containerfile, rebuild the image, and deploy it to the running bootc host — so the port is defined in the image and present on every host built from it.
+
+To make the difference unmistakable, you'll open a *different* port in the image than the one you opened at runtime. In Module 2 you opened `8080/tcp` on the live host (no `--permanent`). Here you'll bake `8443/tcp` into the image. After you rebuild, deploy, and reboot, you'll see `8080/tcp` gone (it was a runtime-only change, wiped by the reboot) and `8443/tcp` open — proof that the open port came from the image, not from anything you typed on the host.
 
 [IMPORTANT]
 ====
@@ -33,7 +35,7 @@ Find the `RUN systemctl enable firewalld` line. On a new line directly beneath i
 
 [source,dockerfile]
 ----
-RUN firewall-offline-cmd --add-port=8080/tcp
+RUN firewall-offline-cmd --add-port=8443/tcp
 ----
 
 Then save and exit: press *Ctrl+O* and *Enter* to write the file, then *Ctrl+X* to quit.
@@ -52,7 +54,7 @@ Review the updated Containerfile:
 cat ~/examples/Containerfile
 ----
 
-You should now see the `RUN firewall-offline-cmd --add-port=8080/tcp` line, after the firewalld setup and before the final `bootc container lint`.
+You should now see the `RUN firewall-offline-cmd --add-port=8443/tcp` line, after the firewalld setup and before the final `bootc container lint`.
 
 == Rebuild the Image
 
@@ -107,14 +109,26 @@ sudo systemctl reboot
 
 == Prove the Rule Came from the Image
 
-Remember that in Module 2 you opened `8080/tcp` at runtime *without* `--permanent` — so the reboot wiped that particular rule. (A `--permanent` rule would have survived the reboot; the point here isn't that runtime rules vanish, it's *where the configuration comes from*.) The host is now running your rebuilt image, which has the port defined in it. Check the open ports:
+This is the moment of truth. Recall the two ports in play:
+
+* `8080/tcp` — opened at *runtime* in Module 2, *without* `--permanent`. A runtime-only rule, so the reboot wiped it.
+* `8443/tcp` — baked into the *image* in this module. It's part of the OS the host just booted.
+
+Check the open ports now:
 
 [source,bash,role=execute]
 ----
 sudo firewall-cmd --list-ports
 ----
 
-`8080/tcp` is open again — and this time *nobody ran `firewall-cmd` on this host*. The port came from the image. Confirm the host is booted into your upgraded image:
+Look at the result: `8080/tcp` is *gone* and `8443/tcp` is *open* — and nobody ran `firewall-cmd` on this host to open it. You never touched `8443` on the running host at all; it's open purely because it's defined in the image the host is now running. That's the proof: the runtime change didn't survive, but the build-time rule is simply *there*, part of every host built from this image.
+
+[NOTE]
+====
+`8080/tcp` vanished here because you added it *without* `--permanent` in Module 2. Had you used `--permanent`, it would have survived the reboot too (it lives in `/etc`, which bootc preserves). The disappearance isn't the lesson — the contrast is: `8443` is open with no per-host action because it came from the image.
+====
+
+Confirm the host is booted into your upgraded image:
 
 [source,bash,role=execute]
 ----
@@ -125,7 +139,7 @@ sudo bootc status
 ====
 *From: Nate (Senior Sysadmin)*
 
-That's the whole point of image mode. The rule now lives in the *image definition*. Rebuild from this Containerfile and every single host you deploy comes up with `8080/tcp` already open — no post-deployment scripting, no forgetting a host, no drift. It's repeatable, it's auditable (it's right there in source control), and it's identical on every host built from the image. That's the difference between a quick fix on one host and configuration that's defined once and applied everywhere.
+That's the whole point of image mode. The rule now lives in the *image definition*. Rebuild from this Containerfile and every single host you deploy comes up with `8443/tcp` already open — no post-deployment scripting, no forgetting a host, no drift. It's repeatable, it's auditable (it's right there in source control), and it's identical on every host built from the image. That's the difference between a quick fix on one host and configuration that's defined once and applied everywhere.
 
 -Nate
 ====

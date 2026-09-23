@@ -15,7 +15,7 @@ RUN systemctl enable firewalld
 # Module 3: add your build-time firewall rule on a new line right below the
 # "RUN systemctl enable firewalld" line above, using firewall-offline-cmd (the
 # firewalld daemon is not running during a container build), for example:
-#   RUN firewall-offline-cmd --add-port=8080/tcp
+#   RUN firewall-offline-cmd --add-port=8443/tcp
 
 # Passwordless sudo for the wheel group (the lab 'core' user is in wheel).
 RUN echo '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel-nopasswd && \
