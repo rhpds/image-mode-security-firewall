@@ -1,0 +1,26 @@
+---
+
+antora:
+  name: modules
+  dir: www
+  modules:
+    - name: index
+      label: "Introduction"
+    - name: module-01
+      label: "Introduction to Firewall Rules in Image Mode"
+      solveButton: false
+    - name: module-02
+      label: "Applying Firewall Rules on a Running Host"
+      solveButton: false
+    - name: module-03
+      label: "Baking Firewall Rules into the Containerfile"
+      solveButton: false
+
+tabs:
+  - name: "Build host terminal"
+    url: /wetty/ssh/root
+  - name: ">_ Bootc VM"
+    url: /wetty_bootc_vm/ssh/root
+    modules:
+      - module-01
+      - module-02

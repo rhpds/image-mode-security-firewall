@@ -1,0 +1,14 @@
+---
+# Project Zero firewall rules.
+# By default egress traffic is not allowed; define allowed ports below.
+egress:
+  - ports:
+      - protocol: TCP
+        port: 443
+ingress:
+  # 80 = certbot ACME http-01 challenge; 443 = registry access
+  - ports:
+      - protocol: TCP
+        port: 80
+      - protocol: TCP
+        port: 443

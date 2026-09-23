@@ -1,0 +1,55 @@
+= Introduction to Firewall Rules in Image Mode
+
+Before you touch the command line, let's build the mental model. This module is reading only — no commands to run — but it sets up everything you'll do in Modules 2 and 3.
+
+== The Scenario
+
+You're a systems administrator at *Super-Business*. The team just moved a fleet of RHEL servers to *image mode* so every host runs the same known, versioned OS image. Your job: make sure the firewall on these hosts is configured correctly — and *stays* that way.
+
+[quote, Manager Scott]
+____
+Team! Great news — I opened a firewall port on one of the new image mode servers myself. Typed the command and everything. So we're basically secure now, right? ...Right?
+____
+
+[NOTE]
+====
+*From: Nate (Senior Sysadmin)*
+
+Ah, Scott. He's not *wrong* that you can open a port at runtime on an image mode host — `firewall-cmd` works there just like it always has. The problem is what happens on the *next* image deployment. On an image mode host, the OS comes from the image; a change you made by hand at runtime isn't part of that image, so a redeploy can wipe it right out. Let me walk you through it — then we'll do it the durable way.
+
+-Nate
+====
+
+== What Is a bootc Host?
+
+RHEL image mode packages the operating system as an immutable container image. Between reboots the OS filesystem (`/usr`) is read-only, and you update the system by building a *new* image and having the host switch to it — not by patching packages in place.
+
+firewalld still runs on an image mode host exactly as it does on a conventional RHEL host. You can query zones, add ports, and reload — the familiar tools are all there. The difference is *durability*, not mechanics.
+
+== Runtime vs. Build-Time: Why It Matters
+
+There are two places you can define a firewall rule on an image mode host:
+
+[cols="1,2,2",options="header"]
+|===
+| Approach | How | Durability
+
+| *Runtime*
+| `firewall-cmd` on the running host
+| Ephemeral — a `--permanent` rule survives reboots, but a *new image deployment* can overwrite the host's configuration. A rule that isn't in the image isn't guaranteed to come back.
+
+| *Build-time*
+| A `RUN firewall-offline-cmd ...` directive in the Containerfile
+| Durable — the rule is part of the image, so *every* host built from it has the rule, on every deployment. Repeatable and auditable.
+|===
+
+The takeaway that drives the rest of this lab:
+
+[IMPORTANT]
+====
+On an image mode host, the image is the source of truth. If you want a firewall rule to be permanent, put it in the *image* — not just in the running host's configuration.
+====
+
+In Module 2 you'll open a port at runtime and see it work. In Module 3 you'll bake that same rule into the Containerfile — the way it's meant to be done.
+
+Click *Next* to open a port on the running host.

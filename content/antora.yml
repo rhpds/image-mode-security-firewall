@@ -1,0 +1,11 @@
+name: modules
+title: "Securing RHEL Image Mode: Firewall Rules at Build Time"
+version: ~
+nav:
+  - modules/ROOT/nav.adoc
+
+asciidoc:
+  attributes:
+    experimental: true
+    page-pagination: true
+    guid: '%GUID%'

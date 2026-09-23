@@ -1,0 +1,56 @@
+---
+# Project Zero instance definitions.
+#
+# Single build host declared to the platform. It runs a local TLS registry,
+# builds the bootc image, converts it to a qcow2, and boots that qcow2 as a
+# NESTED libvirt guest ("bootc-vm") on itself. The nested guest is created in
+# setup-automation and is NOT declared here — the platform tracks only this host.
+virtualmachines:
+  - name: "rhel"
+    image: "rhel-10-0-07-09-25-3"
+    bootloader: efi
+    memory: "16G"
+    cores: 4
+    image_size: "100G"
+    tags:
+      - key: "AnsibleGroup"
+        value: "bastions"
+    networks:
+      - default
+    packages:
+      - podman
+      - skopeo
+      - buildah
+      - libvirt
+      - virt-install
+      - qemu-kvm
+      - libvirt-nss       # lets the build host resolve the nested guest by name
+      - nano
+    services:
+      - name: registry-http     # HTTP for the certbot ACME http-01 challenge
+        ports:
+          - port: 80
+            protocol: TCP
+            targetPort: 80
+            name: registry-http
+      - name: registry          # HTTPS for registry pushes/pulls
+        ports:
+          - port: 443
+            protocol: TCP
+            targetPort: 443
+            name: registry
+    routes:
+      - name: registry-http
+        host: registry
+        service: registry-http
+        targetPort: 80
+        tls: false
+        path: "/.well-known/"   # ACME challenge path only
+      - name: registry
+        host: registry
+        service: registry
+        targetPort: 443
+        tls: true
+    terminals:
+      - name: wetty_bootc_vm    # wetty endpoint that SSHes into the nested guest
+        command: /root/.wait_for_bootc_vm.sh

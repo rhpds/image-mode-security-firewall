@@ -1,0 +1,60 @@
+= Applying Firewall Rules on a Running Host
+
+Time to open a port. In this module you'll use `firewall-cmd` on the live bootc host — the same tool and workflow you'd use on any RHEL system — and then think about what happens to that change across an image update.
+
+[IMPORTANT]
+====
+*Switch tabs* → work in the `Bootc VM` terminal for this module. This is the running image mode host.
+====
+
+== Check the Current Firewall State
+
+First, see which firewalld zone is active on the host and what it currently allows:
+
+[source,bash,role=execute]
+----
+sudo firewall-cmd --get-active-zones
+sudo firewall-cmd --list-all
+----
+
+The active zone (typically `public`) lists the services and ports currently open. Note that no application port like `8080/tcp` is open yet.
+
+== Open a Port at Runtime
+
+Open TCP port `8080` in the active zone:
+
+[source,bash,role=execute]
+----
+sudo firewall-cmd --add-port=8080/tcp
+----
+
+The command returns `success`. Confirm the port is now open:
+
+[source,bash,role=execute]
+----
+sudo firewall-cmd --list-ports
+----
+
+You should see `8080/tcp` in the list. As far as the running host is concerned, the port is open — `firewall-cmd` behaves exactly as it would on a traditional RHEL host.
+
+== Understand What You Just Did
+
+Look closely at the command you ran: there was no `--permanent` flag. That means the rule lives only in the *runtime* configuration and will be gone the next time firewalld is reloaded or the host reboots.
+
+[NOTE]
+====
+*From: Nate (Senior Sysadmin)*
+
+This is the trap Scott fell into. Even if you *had* added `--permanent`, you'd only be safe until the next image deployment. On an image mode host the OS is delivered by the image — redeploy a new image and the host's configuration is reconciled against it. A firewall rule that exists only on the running host, and not in the image, is living on borrowed time.
+
+The lesson isn't "don't use `firewall-cmd`" — it's great for testing and one-off diagnostics. The lesson is: if a rule needs to be permanent, it belongs in the *image*. That's Module 3.
+
+-Nate
+====
+
+[TIP]
+====
+Runtime changes are perfect for *experimenting* — try a port, confirm the app works, then encode the rule you settled on into the Containerfile so it's there for good.
+====
+
+Click *Next* to make this rule durable by baking it into the Containerfile.

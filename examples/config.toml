@@ -1,0 +1,7 @@
+# Reference copy. The live config.toml is generated during setup with the lab's
+# actual SSH public key injected in place of SSHKEY.
+[[customizations.user]]
+name = "core"
+password = "redhat"
+groups = ["wheel"]
+key = "SSHKEY"

@@ -1,0 +1,74 @@
+= Baking Firewall Rules into the Containerfile
+
+The runtime rule from Module 2 works, but it isn't durable. Now you'll do it the image-mode-native way: add the firewall rule to the Containerfile so it's baked into every image you build — and therefore present on every host deployed from that image.
+
+[IMPORTANT]
+====
+*Switch tabs* → work in the `Build host terminal` for this module. This is where the image is built.
+====
+
+== Inspect the Sample Containerfile
+
+A sample Containerfile is already on the build host at `~/examples/Containerfile`. Take a look:
+
+[source,bash,role=execute]
+----
+cat ~/examples/Containerfile
+----
+
+Notice that it already installs and enables `firewalld`, but it does *not* open any application port yet. There's a clearly marked spot for the rule you're about to add.
+
+== Add the Build-Time Firewall Rule
+
+In a container build the firewalld *daemon* is not running, so you can't use `firewall-cmd`. Instead you use its offline counterpart, `firewall-offline-cmd`, which edits firewalld's on-disk configuration directly. Add a `RUN` directive that opens port `8080/tcp`:
+
+[source,bash,role=execute]
+----
+sed -i '/RUN systemctl enable firewalld/a RUN firewall-offline-cmd --add-port=8080/tcp' ~/examples/Containerfile
+----
+
+[NOTE]
+====
+You can also open the file in an editor (`nano ~/examples/Containerfile`) and add the line by hand, right after the `firewalld` install/enable steps:
+
+[source,dockerfile]
+----
+RUN firewall-offline-cmd --add-port=8080/tcp
+----
+
+The `sed` command above just does the same edit for you.
+====
+
+== Confirm the Directive Is in Place
+
+Review the updated Containerfile:
+
+[source,bash,role=execute]
+----
+cat ~/examples/Containerfile
+----
+
+You should now see the `RUN firewall-offline-cmd --add-port=8080/tcp` line in the file, after the firewalld setup and before the final `bootc container lint`.
+
+[NOTE]
+====
+*From: Nate (Senior Sysadmin)*
+
+That's the whole point of image mode. The rule now lives in the *image definition*. Rebuild from this Containerfile and every single host you deploy comes up with `8080/tcp` already open — no post-deployment scripting, no forgetting a host, no drift. It's repeatable, it's auditable (it's right there in source control), and it survives every future image deployment. That's the difference between what Scott did and what a durable fix looks like.
+
+-Nate
+====
+
+[TIP]
+====
+Build-time firewall rules are declarative: the Containerfile *is* the record of what's open and why. Pair each rule with a comment explaining the service it's for, and your firewall policy documents itself.
+====
+
+== Summary
+
+You've now seen both sides of firewall management in image mode:
+
+1. *Runtime* — `firewall-cmd` on the running host opens a port immediately, but the change is ephemeral and can be lost on the next image deployment.
+2. *Build-time* — a `firewall-offline-cmd` directive in the Containerfile bakes the rule into the image, so every host built from it is consistently and durably configured.
+
+For anything that needs to be permanent on an image mode host, the rule belongs in the image. Congratulations — you've completed the lab!

@@ -1,0 +1,25 @@
+# Sample bootc image for the image-mode security-firewall lab.
+#
+# This is the Containerfile you edit in Module 3. It installs and enables
+# firewalld so the built image ships with a firewall, but it does NOT yet open
+# any application ports. Your task in Module 3 is to add a build-time firewall
+# rule with firewall-offline-cmd so the port is baked into every image built
+# from this file — the durable, image-mode-native alternative to the runtime
+# change you made in Module 2.
+FROM registry.redhat.io/rhel10/rhel-bootc:10.1
+
+# Install and enable firewalld so the image ships with an active firewall.
+RUN dnf -y install firewalld && dnf clean all
+RUN systemctl enable firewalld
+
+# Module 3: add your build-time firewall rule right after the firewalld setup
+# above, using firewall-offline-cmd (the firewalld daemon is not running during a
+# container build), for example:
+#   RUN firewall-offline-cmd --add-port=8080/tcp
+
+# Passwordless sudo for the wheel group (the lab 'core' user is in wheel).
+RUN echo '%wheel ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/wheel-nopasswd && \
+    chmod 0440 /etc/sudoers.d/wheel-nopasswd
+
+# Linting is always the final build step.
+RUN bootc container lint

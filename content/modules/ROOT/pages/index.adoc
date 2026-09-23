@@ -1,0 +1,48 @@
+= Securing RHEL Image Mode: Firewall Rules at Build Time
+
+Welcome! In this short lab you'll learn how firewall management changes when you move to RHEL *image mode* (bootc), and why the preferred way to secure an image mode host is to bake firewall rules into the image *at build time* rather than applying them by hand at runtime.
+
+== What Is Image Mode?
+
+In traditional (package mode) RHEL, you change a running system in place — install a package, edit a config file, open a firewall port — and those changes persist on that one machine. In *image mode*, the entire operating system is delivered as a single bootable container image (a *bootc* image). You don't change the host piece by piece; you build a new image and the host switches to it atomically.
+
+That immutability is great for consistency and rollback, but it changes the rules for everyday tasks like firewall management:
+
+[cols="1,1,1",options="header"]
+|===
+| | Package mode (traditional) | Image mode (bootc)
+
+| How you change the OS
+| Edit the running system in place
+| Build a new image and deploy it
+
+| A runtime firewall change
+| Persists on that host
+| Can be lost when a new image is deployed
+
+| The durable way to open a port
+| `firewall-cmd --permanent`
+| Bake the rule into the Containerfile
+|===
+
+== What You'll Do
+
+Three short modules, about 15 minutes total:
+
+1. *Introduction to Firewall Rules in Image Mode* — the concepts (this and the next page).
+2. *Applying Firewall Rules on a Running Host* — open a port with `firewall-cmd` on the live bootc host, and see why that change is ephemeral.
+3. *Baking Firewall Rules into the Containerfile* — add the same rule to the Containerfile so every image build ships with it.
+
+== Your Lab Environment
+
+You have two terminals:
+
+* *Build host terminal* — a RHEL host with Podman and a sample `Containerfile`. This is where you build images and, in Module 3, edit the Containerfile.
+* *Bootc VM* — the RHEL image mode host itself, running as a virtual machine. This is the live host you'll manage firewall rules on in Module 2.
+
+[NOTE]
+====
+Everything is local to your environment — the build host, the registry it uses, and the bootc VM it deployed. Nothing you do here touches anything outside your lab.
+====
+
+When you're ready, click *Next* to begin.
