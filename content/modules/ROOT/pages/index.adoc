@@ -1,6 +1,6 @@
 = Securing RHEL Image Mode: Firewall Rules at Build Time
 
-Welcome! In this short lab you'll learn how firewall management changes when you move to RHEL *image mode* (bootc), and why the preferred way to secure an image mode host is to bake firewall rules into the image *at build time* rather than applying them by hand at runtime.
+Welcome! In this short lab you'll learn how firewall management changes when you move to RHEL *image mode* (bootc). You can apply firewall rules in several ways — by hand with `firewall-cmd`, through automation such as the RHEL system roles, or by baking them into the image *at build time*. All are valid approaches; what changes with image mode is which one gives you a *durable*, repeatable result. This lab focuses on the build-time approach, because on an image mode host that's the one that sticks.
 
 == What Is Image Mode?
 

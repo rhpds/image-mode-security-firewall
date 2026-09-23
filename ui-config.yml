@@ -22,5 +22,5 @@ tabs:
   - name: ">_ Bootc VM"
     url: /wetty_bootc_vm/ssh/root
     modules:
-      - module-01
       - module-02
+      - module-03

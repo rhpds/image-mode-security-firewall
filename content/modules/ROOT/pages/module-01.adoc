@@ -26,17 +26,21 @@ RHEL image mode packages the operating system as an immutable container image. B
 
 firewalld still runs on an image mode host exactly as it does on a conventional RHEL host. You can query zones, add ports, and reload — the familiar tools are all there. The difference is *durability*, not mechanics.
 
-== Runtime vs. Build-Time: Why It Matters
+== Ways to Apply Firewall Rules
 
-There are two places you can define a firewall rule on an image mode host:
+You can apply firewall rules to a RHEL host in several ways, and all of them are legitimate — the right choice depends on what you're doing:
 
 [cols="1,2,2",options="header"]
 |===
-| Approach | How | Durability
+| Approach | How | Durability on an image mode host
 
-| *Runtime*
+| *Manual / runtime*
 | `firewall-cmd` on the running host
-| Ephemeral — a `--permanent` rule survives reboots, but a *new image deployment* can overwrite the host's configuration. A rule that isn't in the image isn't guaranteed to come back.
+| Ephemeral — a `--permanent` rule survives reboots, but a *new image deployment* can overwrite the host's configuration. A rule that isn't in the image isn't guaranteed to come back. Ideal for testing and one-off diagnostics.
+
+| *Automation*
+| A config-management tool such as the RHEL system roles (the `firewall` role)
+| Repeatable and consistent across a fleet. But when applied to a *running* image mode host, the result still lives on the host, not in the image — so it carries the same caveat as a manual change unless it runs as part of the build.
 
 | *Build-time*
 | A `RUN firewall-offline-cmd ...` directive in the Containerfile
@@ -50,6 +54,6 @@ The takeaway that drives the rest of this lab:
 On an image mode host, the image is the source of truth. If you want a firewall rule to be permanent, put it in the *image* — not just in the running host's configuration.
 ====
 
-In Module 2 you'll open a port at runtime and see it work. In Module 3 you'll bake that same rule into the Containerfile — the way it's meant to be done.
+In Module 2 you'll open a port at runtime and see it work. In Module 3 you'll bake that same rule into the Containerfile — the durable, image-native way to make it stick.
 
 Click *Next* to open a port on the running host.

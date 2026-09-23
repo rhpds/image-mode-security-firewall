@@ -47,7 +47,7 @@ Look closely at the command you ran: there was no `--permanent` flag. That means
 
 This is the trap Scott fell into. Even if you *had* added `--permanent`, you'd only be safe until the next image deployment. On an image mode host the OS is delivered by the image — redeploy a new image and the host's configuration is reconciled against it. A firewall rule that exists only on the running host, and not in the image, is living on borrowed time.
 
-The lesson isn't "don't use `firewall-cmd`" — it's great for testing and one-off diagnostics. The lesson is: if a rule needs to be permanent, it belongs in the *image*. That's Module 3.
+The lesson isn't "don't use `firewall-cmd`" — it's great for testing and one-off diagnostics, and automation like the RHEL system roles is great for applying rules consistently across running hosts. The point is that on an image mode host, if a rule needs to *stick* across deployments, it belongs in the *image*. That's Module 3.
 
 -Nate
 ====
