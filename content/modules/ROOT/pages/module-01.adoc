@@ -15,16 +15,16 @@ ____
 ====
 *From: Nate (Senior Sysadmin)*
 
-Ah, Scott. He's not *wrong* that you can open a port at runtime on an image mode host — `firewall-cmd` works there just like it always has. The problem is what happens on the *next* image deployment. On an image mode host, the OS comes from the image; a change you made by hand at runtime isn't part of that image, so a redeploy can wipe it right out. Let me walk you through it — then we'll do it the durable way.
+Ah, Scott. He's not *wrong* — `firewall-cmd` works on an image mode host just like it always has, and a `--permanent` rule even survives image updates, because it's written to `/etc` and bootc keeps your `/etc` and `/var` across deployments. The catch is subtler: a change made by hand lives only on *that one host* and isn't captured anywhere. Build a new server from the same image and it won't have Scott's rule; a year from now nobody knows why the port is open, because its not in the image. On image mode you usually want a host's config to come *from the image*. Let me walk you through it.
 
 -Nate
 ====
 
 == What Is a bootc Host?
 
-RHEL image mode packages the operating system as an immutable container image. Between reboots the OS filesystem (`/usr`) is read-only, and you update the system by building a *new* image and having the host switch to it — not by patching packages in place.
+RHEL image mode delivers the operating system as a versioned *bootc* image. The OS content under `/usr` comes from that image and is read-only at runtime, and you update the system by building a *new* image and switching to it — rather than patching packages in place. Your configuration in `/etc` and data in `/var` are *not* replaced: bootc preserves them across updates (it does a 3-way merge on `/etc`). So a bootc host isn't locked down end to end — the bulk of the OS is swapped wholesale on update, while your local state carries over.
 
-firewalld still runs on an image mode host exactly as it does on a conventional RHEL host. You can query zones, add ports, and reload — the familiar tools are all there. The difference is *durability*, not mechanics.
+firewalld still runs on an image mode host exactly as it does on a conventional RHEL host. You can query zones, add ports, reload, and make rules persistent with `--permanent` — the familiar tools all work, and persistent rules survive both reboots and image updates. What changes isn't whether the tools work or whether changes stick; it's the *paradigm* you follow to manage them.
 
 == Ways to Apply Firewall Rules
 
@@ -32,28 +32,28 @@ You can apply firewall rules to a RHEL host in several ways, and all of them are
 
 [cols="1,2,2",options="header"]
 |===
-| Approach | How | Durability on an image mode host
+| Approach | How | Behavior on an image mode host
 
 | *Manual / runtime*
 | `firewall-cmd` on the running host
-| Ephemeral — a `--permanent` rule survives reboots, but a *new image deployment* can overwrite the host's configuration. A rule that isn't in the image isn't guaranteed to come back. Ideal for testing and one-off diagnostics.
+| A plain rule is runtime-only and gone on reboot; a `--permanent` rule is written to `/etc` and persists across reboots *and* image updates. Either way the change is made per host, outside the image. Ideal for testing and one-off diagnostics.
 
 | *Automation*
 | A config-management tool such as the RHEL system roles (the `firewall` role)
-| Repeatable and consistent across a fleet. But when applied to a *running* image mode host, the result still lives on the host, not in the image — so it carries the same caveat as a manual change unless it runs as part of the build.
+| Repeatable and consistent across a fleet. Applied to a running host the rule persists (in `/etc`) just like a manual `--permanent` change — but the resulting state lives on each host rather than in the image, unless the automation runs as part of the build.
 
 | *Build-time*
 | A `RUN firewall-offline-cmd ...` directive in the Containerfile
-| Durable — the rule is part of the image, so *every* host built from it has the rule, on every deployment. Repeatable and auditable.
+| Declarative — the rule is part of the image, so *every* host built from it comes up with the rule, no per-host step. Versioned, repeatable, and auditable.
 |===
 
 The takeaway that drives the rest of this lab:
 
 [IMPORTANT]
 ====
-On an image mode host, the image is the source of truth. If you want a firewall rule to be permanent, put it in the *image* — not just in the running host's configuration.
+On an image mode host, the image is the natural source of truth for a host's configuration. You *can* set firewall rules directly on a host and they'll persist — but defining them in the image makes them declarative, versioned, and identical on every host built from it.
 ====
 
-In Module 2 you'll open a port at runtime and see it work. In Module 3 you'll bake that same rule into the Containerfile — the durable, image-native way to make it stick.
+In Module 2 you'll open a port on the running host and see what persists. In Module 3 you'll define that same rule in the Containerfile — the image-native way to make it part of every host built from the image.
 
 Click *Next* to open a port on the running host.
