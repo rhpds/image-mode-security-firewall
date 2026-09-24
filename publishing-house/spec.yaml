@@ -36,7 +36,7 @@ spec:
   - id: module-03
     title: "Baking Firewall Rules into the Containerfile"
     duration_min: 5
-    status: not_started
+    status: in_progress
   environment:
     platform: "rhel-vms"       # ocp | rhel-vms — determines which sizing fields apply
     topology: "per-student"    # shared-cluster | per-student | cnv-pool
