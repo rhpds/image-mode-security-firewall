@@ -1,0 +1,13 @@
+---
+# VALIDATE — Module 2: Applying Firewall Rules on a Running Host
+# Runs when the learner clicks the "Validate" button.
+# Should verify the expected state and fail with a clear message if not met.
+
+- name: "Module 2 Validate"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: "TODO: Implement validate logic"
+      ansible.builtin.debug:
+        msg: "Replace this task with your validate implementation"
