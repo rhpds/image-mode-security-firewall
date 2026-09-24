@@ -28,7 +28,7 @@ spec:
   - id: module-01
     title: "Introduction to Firewall Rules in Image Mode"
     duration_min: 5
-    status: not_started
+    status: in_progress
   - id: module-02
     title: "Applying Firewall Rules on a Running Host"
     duration_min: 5
