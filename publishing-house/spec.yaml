@@ -32,7 +32,7 @@ spec:
   - id: module-02
     title: "Applying Firewall Rules on a Running Host"
     duration_min: 5
-    status: in_progress
+    status: complete
   - id: module-03
     title: "Baking Firewall Rules into the Containerfile"
     duration_min: 5
