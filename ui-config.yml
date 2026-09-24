@@ -24,5 +24,5 @@ tabs:
     path: /wetty_bootc_vm/ssh/root
     port: 443
     modules:
-      - module-01
       - module-02
+      - module-03

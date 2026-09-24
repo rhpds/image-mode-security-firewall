@@ -14,6 +14,10 @@ First, see which firewalld zone is active on the host and what it currently allo
 [source,bash,role=execute]
 ----
 sudo firewall-cmd --get-active-zones
+----
+
+[source,bash,role=execute]
+----
 sudo firewall-cmd --list-all
 ----
 
@@ -45,16 +49,16 @@ Look closely at the command you ran: there was no `--permanent` flag. That means
 ====
 *From: Nate (Senior Sysadmin)*
 
-This is the trap Scott fell into. Even if you *had* added `--permanent`, you'd only be safe until the next image deployment. On an image mode host the OS is delivered by the image — redeploy a new image and the host's configuration is reconciled against it. A firewall rule that exists only on the running host, and not in the image, is living on borrowed time.
+The rule you just added is runtime-only, so it *will* vanish on the next reboot — that part is the same on any RHEL host. But don't over-correct: had you added `--permanent`, the rule would be written to `/etc/firewalld`, and bootc preserves `/etc` across image updates, so it would persist. The real limitation isn't durability. It's that a rule set this way lives only on *this one host*, configured by hand — spin up another server from the same image and it won't have it, and nothing records why the port is open.
 
-The lesson isn't "don't use `firewall-cmd`" — it's great for testing and one-off diagnostics. The lesson is: if a rule needs to be permanent, it belongs in the *image*. That's Module 3.
+The lesson isn't "don't use `firewall-cmd`" — it's great for testing and one-off diagnostics, and automation like the RHEL system roles is great for applying rules across running hosts. The point is the *paradigm*: with image mode you generally want a host's configuration to come from the image — declarative, identical on every host, and recorded in source. That's Module 3.
 
 -Nate
 ====
 
 [TIP]
 ====
-Runtime changes are perfect for *experimenting* — try a port, confirm the app works, then encode the rule you settled on into the Containerfile so it's there for good.
+Runtime changes are perfect for *experimenting* — try a port, confirm the app works, then encode the rule you settled on into the Containerfile so it's part of the image and every host built from it gets it.
 ====
 
-Click *Next* to make this rule durable by baking it into the Containerfile.
+Click *Next* to define this rule in the image itself, so every host built from it comes up with the port open.

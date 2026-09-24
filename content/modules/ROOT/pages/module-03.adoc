@@ -1,10 +1,12 @@
 = Baking Firewall Rules into the Containerfile
 
-The runtime rule from Module 2 works, but it isn't durable. Now you'll do it the image-mode-native way: add the firewall rule to the Containerfile so it's baked into every image you build — and therefore present on every host deployed from that image.
+The runtime rule from Module 2 works, but it lives only on that one host. Now you'll do it the image-mode-native way: add a firewall rule to the Containerfile, rebuild the image, and deploy it to the running bootc host — so the port is defined in the image and present on every host built from it.
+
+To make the difference unmistakable, you'll open a *different* port in the image than the one you opened at runtime. In Module 2 you opened `8080/tcp` on the live host (no `--permanent`). Here you'll bake `8443/tcp` into the image. After you rebuild, deploy, and reboot, you'll see `8080/tcp` gone (it was a runtime-only change, wiped by the reboot) and `8443/tcp` open — proof that the open port came from the image, not from anything you typed on the host.
 
 [IMPORTANT]
 ====
-*Switch tabs* → work in the `Build host terminal` for this module. This is where the image is built.
+*Switch tabs* → work in the `Build host terminal` for the first half of this module. This is where the image is built.
 ====
 
 == Inspect the Sample Containerfile
@@ -16,27 +18,31 @@ A sample Containerfile is already on the build host at `~/examples/Containerfile
 cat ~/examples/Containerfile
 ----
 
-Notice that it already installs and enables `firewalld`, but it does *not* open any application port yet. There's a clearly marked spot for the rule you're about to add.
+Notice that it already installs and enables `firewalld`, but it does *not* open any application port yet. There's a clearly marked spot, right after the firewalld setup, for the rule you're about to add.
 
-== Add the Build-Time Firewall Rule
+== Edit the Containerfile
 
-In a container build the firewalld *daemon* is not running, so you can't use `firewall-cmd`. Instead you use its offline counterpart, `firewall-offline-cmd`, which edits firewalld's on-disk configuration directly. Add a `RUN` directive that opens port `8080/tcp`:
+In a container build the firewalld *daemon* is not running, so you can't use `firewall-cmd`. Instead you use its offline counterpart, `firewall-offline-cmd`, which edits firewalld's on-disk configuration directly.
+
+Open the Containerfile in `nano`:
 
 [source,bash,role=execute]
 ----
-sed -i '/RUN systemctl enable firewalld/a RUN firewall-offline-cmd --add-port=8080/tcp' ~/examples/Containerfile
+nano ~/examples/Containerfile
 ----
 
-[NOTE]
-====
-You can also open the file in an editor (`nano ~/examples/Containerfile`) and add the line by hand, right after the `firewalld` install/enable steps:
+Find the `RUN systemctl enable firewalld` line. On a new line directly beneath it, add:
 
 [source,dockerfile]
 ----
-RUN firewall-offline-cmd --add-port=8080/tcp
+RUN firewall-offline-cmd --add-port=8443/tcp
 ----
 
-The `sed` command above just does the same edit for you.
+Then save and exit: press *Ctrl+O* and *Enter* to write the file, then *Ctrl+X* to quit.
+
+[TIP]
+====
+`nano` lists its shortcuts along the bottom of the screen, where `^` means Ctrl. So `^O` is Ctrl+O (write out / save) and `^X` is Ctrl+X (exit).
 ====
 
 == Confirm the Directive Is in Place
@@ -48,13 +54,92 @@ Review the updated Containerfile:
 cat ~/examples/Containerfile
 ----
 
-You should now see the `RUN firewall-offline-cmd --add-port=8080/tcp` line in the file, after the firewalld setup and before the final `bootc container lint`.
+You should now see the `RUN firewall-offline-cmd --add-port=8443/tcp` line, after the firewalld setup and before the final `bootc container lint`.
+
+== Rebuild the Image
+
+Build a new image from your edited Containerfile, tagging it with the *same* image reference the bootc host already tracks. Reusing the exact tag is what lets the host pull your change as an upgrade:
+
+[source,bash,role=execute,subs=attributes+]
+----
+podman build --tag registry-{guid}.{domain}/base --file ~/examples/Containerfile ~/examples
+----
+
+== Push the Image to the Registry
+
+Push the rebuilt image back to the local registry so the bootc host can pull it:
+
+[source,bash,role=execute,subs=attributes+]
+----
+podman push registry-{guid}.{domain}/base
+----
+
+== Deploy the New Image to the Bootc Host
+
+[IMPORTANT]
+====
+*Switch tabs* → work in the `Bootc VM` terminal for the rest of this module. This is the running image mode host that will pull and deploy your new image.
+====
+
+The host was deployed from the same `registry-{guid}.{domain}/base` reference you just pushed to, so it can upgrade straight to your new image. Stage the upgrade:
+
+[source,bash,role=execute]
+----
+sudo bootc upgrade
+----
+
+`bootc` fetches the new image and stages it as the next boot. See what's queued:
+
+[source,bash,role=execute]
+----
+sudo bootc status
+----
+
+Now reboot into the new image:
+
+[source,bash,role=execute]
+----
+sudo systemctl reboot
+----
+
+[IMPORTANT]
+====
+*Reconnect* → the reboot drops your SSH session. Wait about a minute, then reopen the `Bootc VM` terminal tab to reconnect once the host is back up.
+====
+
+== Prove the Rule Came from the Image
+
+This is the moment of truth. Recall the two ports in play:
+
+* `8080/tcp` — opened at *runtime* in Module 2, *without* `--permanent`. A runtime-only rule, so the reboot wiped it.
+* `8443/tcp` — baked into the *image* in this module. It's part of the OS the host just booted.
+
+Check the open ports now:
+
+[source,bash,role=execute]
+----
+sudo firewall-cmd --list-ports
+----
+
+Look at the result: `8080/tcp` is *gone* and `8443/tcp` is *open* — and nobody ran `firewall-cmd` on this host to open it. You never touched `8443` on the running host at all; it's open purely because it's defined in the image the host is now running. That's the proof: the runtime change didn't survive, but the build-time rule is simply *there*, part of every host built from this image.
+
+[NOTE]
+====
+`8080/tcp` vanished here because you added it *without* `--permanent` in Module 2. Had you used `--permanent`, it would have survived the reboot too (it lives in `/etc`, which bootc preserves). The disappearance isn't the lesson — the contrast is: `8443` is open with no per-host action because it came from the image.
+====
+
+Confirm the host is booted into your upgraded image:
+
+[source,bash,role=execute]
+----
+sudo bootc status
+----
 
 [NOTE]
 ====
 *From: Nate (Senior Sysadmin)*
 
-That's the whole point of image mode. The rule now lives in the *image definition*. Rebuild from this Containerfile and every single host you deploy comes up with `8080/tcp` already open — no post-deployment scripting, no forgetting a host, no drift. It's repeatable, it's auditable (it's right there in source control), and it survives every future image deployment. That's the difference between what Scott did and what a durable fix looks like.
+That's the whole point of image mode. The rule now lives in the *image definition*. Rebuild from this Containerfile and every single host you deploy comes up with `8443/tcp` already open — no post-deployment scripting, no forgetting a host, no drift. It's repeatable, it's auditable (it's right there in source control), and it's identical on every host built from the image. That's the difference between a quick fix on one host and configuration that's defined once and applied everywhere.
 
 -Nate
 ====
@@ -66,9 +151,10 @@ Build-time firewall rules are declarative: the Containerfile *is* the record of 
 
 == Summary
 
-You've now seen both sides of firewall management in image mode:
+You've now seen how firewall rules fit into image mode. There are several valid ways to apply them:
 
-1. *Runtime* — `firewall-cmd` on the running host opens a port immediately, but the change is ephemeral and can be lost on the next image deployment.
-2. *Build-time* — a `firewall-offline-cmd` directive in the Containerfile bakes the rule into the image, so every host built from it is consistently and durably configured.
+1. *Manual / runtime* — `firewall-cmd` on the running host opens a port immediately. A plain rule is ephemeral (gone on reboot); `--permanent` persists in `/etc`, even across image updates. Either way it's configured per host, outside the image. Perfect for testing and one-off diagnostics.
+2. *Automation* — tools like the RHEL system roles apply rules consistently across many running hosts. Great for fleet-wide configuration, though on an image mode host the result still lives on the host unless it's part of the build.
+3. *Build-time* — a `firewall-offline-cmd` directive in the Containerfile defines the rule in the image, so every host built from it comes up with the port open, no per-host step.
 
-For anything that needs to be permanent on an image mode host, the rule belongs in the image. Congratulations — you've completed the lab!
+All three are legitimate tools. When you want a host's configuration defined once and applied to every host built from the image, the rule belongs in the Containerfile — and you just proved it end to end by rebuilding, deploying, and rebooting into it. Congratulations — you've completed the lab!

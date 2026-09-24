@@ -1,12 +1,12 @@
 = Securing RHEL Image Mode: Firewall Rules at Build Time
 
-Welcome! In this short lab you'll learn how firewall management changes when you move to RHEL *image mode* (bootc), and why the preferred way to secure an image mode host is to bake firewall rules into the image *at build time* rather than applying them by hand at runtime.
+Welcome! In this short lab you'll learn how firewall management changes when you move to RHEL *image mode* (bootc). You can apply firewall rules in several ways — by hand with `firewall-cmd`, through automation such as the RHEL system roles, or by baking them into the image *at build time*. All are valid approaches, and — perhaps surprisingly — a rule you set on a bootc host with `firewall-cmd --permanent` does persist across image updates. What really changes with image mode is the *paradigm*: rather than configuring each host after it boots, you usually describe a host's desired state in the image itself, or at at least prep it to accept automation (which is outside of the scope of this lab). This lab focuses on that build-time approach, because it's the one that fits how bootc systems are managed natively.
 
 == What Is Image Mode?
 
-In traditional (package mode) RHEL, you change a running system in place — install a package, edit a config file, open a firewall port — and those changes persist on that one machine. In *image mode*, the entire operating system is delivered as a single bootable container image (a *bootc* image). You don't change the host piece by piece; you build a new image and the host switches to it atomically.
+In traditional (package mode) RHEL, you change a running system in place — install a package, edit a config file, open a firewall port — and those changes persist on that one machine. In *image mode*, the operating system content is delivered as a single bootable container image (a *bootc* image). Instead of patching the OS package by package, you build a new image and the host switches to it as a unit. Your configuration in `/etc` and your data in `/var` are carried across that switch — image mode replaces the OS content (the `/usr` tree), not your local state.
 
-That immutability is great for consistency and rollback, but it changes the rules for everyday tasks like firewall management:
+That model is great for consistency and rollback, but it shifts how you think about everyday tasks like firewall management:
 
 [cols="1,1,1",options="header"]
 |===
@@ -16,13 +16,13 @@ That immutability is great for consistency and rollback, but it changes the rule
 | Edit the running system in place
 | Build a new image and deploy it
 
-| A runtime firewall change
+| A `firewall-cmd --permanent` rule
 | Persists on that host
-| Can be lost when a new image is deployed
+| Also persists — it's stored in `/etc`, which carries across image updates
 
-| The durable way to open a port
-| `firewall-cmd --permanent`
-| Bake the rule into the Containerfile
+| The idiomatic way to open a port
+| Configure the running host (`firewall-cmd --permanent`)
+| Define it in the Containerfile, so every host built from the image has it
 |===
 
 == What You'll Do
@@ -30,7 +30,7 @@ That immutability is great for consistency and rollback, but it changes the rule
 Three short modules, about 15 minutes total:
 
 1. *Introduction to Firewall Rules in Image Mode* — the concepts (this and the next page).
-2. *Applying Firewall Rules on a Running Host* — open a port with `firewall-cmd` on the live bootc host, and see why that change is ephemeral.
+2. *Applying Firewall Rules on a Running Host* — open a port with `firewall-cmd` on the live bootc host, and see what persists and what doesn't.
 3. *Baking Firewall Rules into the Containerfile* — add the same rule to the Containerfile so every image build ships with it.
 
 == Your Lab Environment
