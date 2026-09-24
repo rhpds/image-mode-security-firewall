@@ -11,9 +11,5 @@ ui:
   bundle:
     url: https://github.com/rhpds/nookbag-bundle/releases/download/v0.0.3/ui-bundle.zip
     snapshot: true
-antora:
-  extensions:
-    - require: /antora/lib/dev-mode.js
-      enabled: true
 output:
   dir: ./www
