@@ -1,7 +1,7 @@
 ---
 site:
-  title: "Securing RHEL Image Mode: Firewall Rules at Build Time"
-  url: https://github.com/rhpds/image-mode-security-firewall
+  title: My Project
+  url: https://github.com/rhpds/my-project
   start_page: modules::index.adoc
 
 content:

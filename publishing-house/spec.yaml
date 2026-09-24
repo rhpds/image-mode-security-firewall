@@ -28,15 +28,15 @@ spec:
   - id: module-01
     title: "Introduction to Firewall Rules in Image Mode"
     duration_min: 5
-    status: complete
+    status: not_started
   - id: module-02
     title: "Applying Firewall Rules on a Running Host"
     duration_min: 5
-    status: complete
+    status: not_started
   - id: module-03
     title: "Baking Firewall Rules into the Containerfile"
     duration_min: 5
-    status: complete
+    status: not_started
   environment:
     platform: "rhel-vms"       # ocp | rhel-vms — determines which sizing fields apply
     topology: "per-student"    # shared-cluster | per-student | cnv-pool
@@ -83,9 +83,9 @@ spec:
 development:
   automation:
     ansible:
-      status: in_progress
+      status: not_started
   e2e:
-    status: in_progress
+    status: not_started
   healthCheck:
     status: not_started
 

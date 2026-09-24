@@ -1,9 +1,0 @@
----
-lab:
-  name: "Securing RHEL Image Mode: Firewall Rules at Build Time"
-  shortname: "image-mode-security-firewall"
-  maintainer: "nlager@redhat.com"
-  description: "In this hands-on lab, you will learn how to add firewall rules as part of your image hardening procedures at build-time on a bootc image."
-  git_ref:
-    production: main
-    development: development

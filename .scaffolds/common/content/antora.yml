@@ -1,5 +1,5 @@
 name: modules
-title: "Securing RHEL Image Mode: Firewall Rules at Build Time"
+title: My Lab Title
 version: ~
 nav:
   - modules/ROOT/nav.adoc

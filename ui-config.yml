@@ -18,11 +18,9 @@ antora:
 
 tabs:
   - name: "Build host terminal"
-    path: /wetty/ssh/root
-    port: 443
+    url: /wetty/ssh/root
   - name: ">_ Bootc VM"
-    path: /wetty_bootc_vm/ssh/root
-    port: 443
+    url: /wetty_bootc_vm/ssh/root
     modules:
       - module-02
       - module-03
