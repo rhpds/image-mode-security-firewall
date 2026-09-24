@@ -1,13 +1,13 @@
 ---
 # SOLVE — Module 2: Applying Firewall Rules on a Running Host
-# Runs when the learner clicks the "Solve" button.
-# Should perform all steps the learner would do manually.
+# Opens TCP port 8080 in the active firewalld zone on the bootc VM.
+# Replicates: sudo firewall-cmd --add-port=8080/tcp
 
 - name: "Module 2 Solve"
-  hosts: localhost
-  connection: local
+  hosts: bastions
   gather_facts: false
   tasks:
-    - name: "TODO: Implement solve logic"
-      ansible.builtin.debug:
-        msg: "Replace this task with your solve implementation"
+    - name: Open TCP port 8080 on the bootc VM
+      ansible.builtin.shell:
+        cmd: ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@bootc-vm firewall-cmd --add-port=8080/tcp
+      changed_when: true
