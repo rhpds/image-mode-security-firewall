@@ -6,18 +6,18 @@ Before you touch the command line, let's build the mental model. This module is 
 
 You're a systems administrator at *Super-Business*. The team just moved a fleet of RHEL servers to *image mode* so every host runs the same known, versioned OS image. Your job: make sure the firewall on these hosts is configured correctly — and *stays* that way.
 
-[quote, Manager Scott]
+[quote, Manager Bill]
 ____
 Team! Great news — I opened a firewall port on one of the new image mode servers myself. Typed the command and everything. So we're basically secure now, right? ...Right?
 ____
 
 [NOTE]
 ====
-*From: Nate (Senior Sysadmin)*
+*From: Grace (Senior Sysadmin)*
 
-Ah, Scott. He's not *wrong* — `firewall-cmd` works on an image mode host just like it always has, and a `--permanent` rule even survives image updates, because it's written to `/etc` and bootc keeps your `/etc` and `/var` across deployments. The catch is subtler: a change made by hand lives only on *that one host* and isn't captured anywhere. Build a new server from the same image and it won't have Scott's rule; a year from now nobody knows why the port is open, because its not in the image. On image mode you usually want a host's config to come *from the image*. Let me walk you through it.
+Ah, Bill. He's not *wrong* — `firewall-cmd` works on an image mode host just like it always has, and a `--permanent` rule even survives image updates, because it's written to `/etc` and bootc keeps your `/etc` and `/var` across deployments. The catch is subtler: a change made by hand lives only on *that one host* and isn't captured anywhere. Build a new server from the same image and it won't have Bill's rule; a year from now nobody knows why the port is open, because its not in the image. On image mode you usually want a host's config to come *from the image*. Let me walk you through it.
 
--Nate
+-Grace
 ====
 
 == What Is a bootc Host?
