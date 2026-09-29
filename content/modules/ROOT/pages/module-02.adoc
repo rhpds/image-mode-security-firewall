@@ -47,13 +47,13 @@ Look closely at the command you ran: there was no `--permanent` flag. That means
 
 [NOTE]
 ====
-*From: Nate (Senior Sysadmin)*
+*From: Grace (Senior Sysadmin)*
 
 The rule you just added is runtime-only, so it *will* vanish on the next reboot — that part is the same on any RHEL host. But don't over-correct: had you added `--permanent`, the rule would be written to `/etc/firewalld`, and bootc preserves `/etc` across image updates, so it would persist. The real limitation isn't durability. It's that a rule set this way lives only on *this one host*, configured by hand — spin up another server from the same image and it won't have it, and nothing records why the port is open.
 
 The lesson isn't "don't use `firewall-cmd`" — it's great for testing and one-off diagnostics, and automation like the RHEL system roles is great for applying rules across running hosts. The point is the *paradigm*: with image mode you generally want a host's configuration to come from the image — declarative, identical on every host, and recorded in source. That's Module 3.
 
--Nate
+-Grace
 ====
 
 [TIP]
