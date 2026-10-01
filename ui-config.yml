@@ -15,6 +15,9 @@ antora:
     - name: module-03-build-time-firewall-rules
       label: "Baking Firewall Rules into the Containerfile"
       solveButton: false
+    - name: conclusion
+      label: "Conclusion"
+      solveButton: false
 
 tabs:
   - name: "Build host terminal"
