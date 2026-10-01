@@ -6,21 +6,26 @@ antora:
   modules:
     - name: index
       label: "Introduction"
-    - name: module-01
+    - name: module-01-intro
       label: "Introduction to Firewall Rules in Image Mode"
       solveButton: false
-    - name: module-02
+    - name: module-02-runtime-firewall-rules
       label: "Applying Firewall Rules on a Running Host"
       solveButton: false
-    - name: module-03
+    - name: module-03-build-time-firewall-rules
       label: "Baking Firewall Rules into the Containerfile"
+      solveButton: false
+    - name: conclusion
+      label: "Conclusion"
       solveButton: false
 
 tabs:
   - name: "Build host terminal"
-    url: /wetty/ssh/root
+    path: /wetty/ssh/root
+    port: 443
   - name: ">_ Bootc VM"
-    url: /wetty_bootc_vm/ssh/root
+    path: /wetty_bootc_vm/ssh/root
+    port: 443
     modules:
-      - module-02
-      - module-03
+      - module-02-runtime-firewall-rules
+      - module-03-build-time-firewall-rules

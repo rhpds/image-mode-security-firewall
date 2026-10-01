@@ -1,0 +1,12 @@
+= Thank You
+
+Thank you for completing *Securing RHEL Image Mode: Firewall Rules at Build Time*. In this lab you explored how firewall management works in immutable, image-based RHEL environments and learned why build-time configuration is the preferred approach for bootc systems.
+
+== Topics Covered
+
+* What RHEL image mode (bootc) is and how it differs from traditionally managed RHEL systems
+* How firewalld operates on a running image mode host
+* The difference between runtime firewall changes (ephemeral) and build-time firewall rules (durable across image updates)
+* Using `firewall-cmd` to apply a rule to a live bootc host and verify it is active
+* Using `firewall-offline-cmd` in a Containerfile `RUN` layer to bake firewall rules into every image build
+* Why build-time hardening aligns with the immutable-OS model and produces repeatable, auditable policy

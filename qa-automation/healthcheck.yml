@@ -1,8 +1,7 @@
 ---
-# HEALTHCHECK — Quick environment readiness check (migrated ZT Guided content)
-# Verifies the bastion host is reachable via SSH. Non-destructive: does not
-# modify any lab state. Should complete in under 60 seconds.
-#
+# HEALTHCHECK — Quick environment readiness check
+# Verifies the build host is reachable, the nested bootc VM is running in
+# libvirt, and SSH into the bootc VM works. Non-destructive.
 # Exit 0 = healthy, non-zero = unhealthy.
 
 - name: Build inventory
@@ -17,10 +16,30 @@
         ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
         ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
 
-- name: Healthcheck
+- name: Healthcheck - build host and bootc VM
   hosts: all:!localhost
   gather_facts: false
-  become: false
+  become: true
+  vars:
+    guid: "{{ lookup('ansible.builtin.env', 'GUID') }}"
+    bootc_vm_name: bootc-vm
+    bootc_vm_key: "/root/.ssh/{{ guid }}key"
   tasks:
-    - name: Verify SSH connectivity
+    - name: Verify build host SSH connectivity
       ansible.builtin.ping:
+
+    - name: Verify bootc VM is running in libvirt
+      ansible.builtin.command: virsh domstate {{ bootc_vm_name }}
+      register: r_domstate
+      changed_when: false
+      failed_when: "'running' not in r_domstate.stdout"
+
+    - name: Verify SSH connectivity to bootc VM
+      ansible.builtin.command: >
+        ssh -i {{ bootc_vm_key }}
+        -o StrictHostKeyChecking=no
+        -o ConnectTimeout=10
+        core@{{ bootc_vm_name }} echo ok
+      register: r_bootc_ssh
+      changed_when: false
+      failed_when: r_bootc_ssh.rc != 0
