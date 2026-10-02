@@ -58,5 +58,87 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Image built and pushed successfully" >> /tmp/progress.log
-echo "NOTE: Learner must run 'sudo bootc upgrade' and 'sudo systemctl reboot' on bootc-vm to deploy" >> /tmp/progress.log
+
+# Rebuild the bootc-vm from the updated image
+echo "Rebuilding bootc-vm disk image from updated container image..." >> /tmp/progress.log
+
+BIB=registry.redhat.io/rhel10/bootc-image-builder:10.1
+
+# Destroy and undefine the existing bootc-vm
+virsh destroy bootc-vm 2>/dev/null >> /tmp/progress.log
+virsh undefine bootc-vm 2>/dev/null >> /tmp/progress.log
+
+# Remove old qcow2 output
+rm -rf /root/qcow2 2>/dev/null
+
+# Use bootc-image-builder to create new qcow2 from the updated image
+cd /root
+podman run --rm --privileged --security-opt label=type:unconfined_t \
+  --volume ./config.toml:/config.toml \
+  --volume /var/lib/containers/storage:/var/lib/containers/storage \
+  --volume .:/output \
+  ${BIB} \
+  --type qcow2 \
+  registry-${GUID}.${DOMAIN}/base >> /tmp/progress.log 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "FAIL: bootc-image-builder failed" >> /tmp/progress.log
+    exit 1
+fi
+
+# Copy the new disk image
+cp -f /root/qcow2/disk.qcow2 /var/lib/libvirt/images/bootc-vm.qcow2
+
+if [ $? -ne 0 ]; then
+    echo "FAIL: Failed to copy qcow2 disk image" >> /tmp/progress.log
+    exit 1
+fi
+
+# Recreate the VM with the new disk image
+virt-install --name bootc-vm \
+  --disk /var/lib/libvirt/images/bootc-vm.qcow2 \
+  --import --memory 4096 --graphics none \
+  --osinfo rhel10-unknown --noautoconsole --noreboot >> /tmp/progress.log 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "FAIL: virt-install failed" >> /tmp/progress.log
+    exit 1
+fi
+
+# Start the VM
+virsh start bootc-vm >> /tmp/progress.log 2>&1
+
+if [ $? -ne 0 ]; then
+    echo "FAIL: Failed to start bootc-vm" >> /tmp/progress.log
+    exit 1
+fi
+
+echo "Waiting for bootc-vm to come up..." >> /tmp/progress.log
+sleep 10
+
+# Wait for the VM to be accessible (retry SSH for up to 2 minutes)
+KEY=$(ls /root/.ssh/*key 2>/dev/null | head -1)
+if [ -z "$KEY" ]; then
+    echo "FAIL: SSH key not found" >> /tmp/progress.log
+    exit 1
+fi
+
+RETRY_COUNT=0
+MAX_RETRIES=24  # 24 * 5 seconds = 2 minutes
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if ssh -i "$KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 core@bootc-vm 'echo ok' >> /tmp/progress.log 2>&1; then
+        echo "bootc-vm is up and accessible" >> /tmp/progress.log
+        break
+    fi
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    sleep 5
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    echo "FAIL: bootc-vm did not come up after deployment" >> /tmp/progress.log
+    exit 1
+fi
+
+echo "Module 3 solve complete: VM redeployed with updated image containing build-time firewall rule" >> /tmp/progress.log
 exit 0
