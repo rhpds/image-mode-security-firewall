@@ -15,7 +15,7 @@ if [ -z "$KEY" ]; then
 fi
 
 # Open port 8080/tcp on the bootc-vm (runtime only, no --permanent)
-ssh -i "$KEY" -o StrictHostKeyChecking=no core@bootc-vm 'sudo firewall-cmd --add-port=8080/tcp' >> /tmp/progress.log 2>&1
+ssh -i "$KEY" -o StrictHostKeyChecking=no -o ControlPath=none core@bootc-vm 'sudo firewall-cmd --add-port=8080/tcp' >> /tmp/progress.log 2>&1
 
 if [ $? -ne 0 ]; then
     echo "FAIL: Could not add port 8080/tcp to firewall on bootc-vm" >> /tmp/progress.log

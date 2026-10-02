@@ -15,7 +15,7 @@ if [ -z "$KEY" ]; then
 fi
 
 # Check that port 8080/tcp is open on the bootc-vm
-PORTS=$(ssh -i "$KEY" -o StrictHostKeyChecking=no core@bootc-vm 'sudo firewall-cmd --list-ports' 2>/dev/null)
+PORTS=$(ssh -i "$KEY" -o StrictHostKeyChecking=no -o ControlPath=none core@bootc-vm 'sudo firewall-cmd --list-ports' 2>/dev/null)
 
 if [ $? -ne 0 ]; then
     echo "FAIL: Cannot connect to bootc-vm"

@@ -54,7 +54,7 @@ else
 fi
 
 # Check 3 & 4: On bootc-vm, verify 8443/tcp is open and 8080/tcp is NOT open
-PORTS=$(ssh -i "$KEY" -o StrictHostKeyChecking=no core@bootc-vm 'sudo firewall-cmd --list-ports' 2>/dev/null)
+PORTS=$(ssh -i "$KEY" -o StrictHostKeyChecking=no -o ControlPath=none core@bootc-vm 'sudo firewall-cmd --list-ports' 2>/dev/null)
 
 if [ $? -ne 0 ]; then
     echo "FAIL: Cannot connect to bootc-vm"
@@ -69,8 +69,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo "$PORTS" | grep -q '8080/tcp'
-if [ $? -eq 0 ]; then
+if echo "$PORTS" | grep -q '8080/tcp'; then
     echo "FAIL: Port 8080/tcp is still open on bootc-vm"
     echo "HINT: The runtime-only change from module-02 should be gone after reboot. Reboot bootc-vm with 'sudo systemctl reboot'"
     exit 1

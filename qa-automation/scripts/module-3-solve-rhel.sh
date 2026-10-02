@@ -19,7 +19,7 @@ if grep -qE '^[[:space:]]*RUN[[:space:]]+firewall-offline-cmd[[:space:]]+--add-p
     echo "Directive already present in Containerfile" >> /tmp/progress.log
 else
     # Add the firewall-offline-cmd directive after the "systemctl enable firewalld" line
-    sed -i '/RUN systemctl enable firewalld/a RUN firewall-offline-cmd --add-port=8443/tcp' "$CONTAINERFILE"
+    sed -i '/^RUN systemctl enable firewalld$/a RUN firewall-offline-cmd --add-port=8443/tcp' "$CONTAINERFILE"
 
     if [ $? -ne 0 ]; then
         echo "FAIL: Could not modify Containerfile" >> /tmp/progress.log
@@ -127,7 +127,7 @@ RETRY_COUNT=0
 MAX_RETRIES=24  # 24 * 5 seconds = 2 minutes
 
 while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-    if ssh -i "$KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=5 core@bootc-vm 'echo ok' >> /tmp/progress.log 2>&1; then
+    if ssh -i "$KEY" -o StrictHostKeyChecking=no -o ControlPath=none -o ConnectTimeout=5 core@bootc-vm 'echo ok' >> /tmp/progress.log 2>&1; then
         echo "bootc-vm is up and accessible" >> /tmp/progress.log
         break
     fi
