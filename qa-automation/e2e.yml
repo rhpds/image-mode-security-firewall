@@ -1,40 +1,39 @@
 ---
-# E2E — End-to-end test (migrated ZT Guided content)
-# Solves and validates every module in ui-config.yml order, reusing the
-# legacy runtime-automation shell scripts (solve-<host>.sh / validation-<host>.sh)
-# that a migrated repo already ships. Fails on the first broken module.
+# E2E — End-to-end test
+# Runs the qa-automation/scripts shell scripts against the rhel VM, in a
+# fixed order. Fails on the first broken script.
+#
+# The showroom runner container has direct SSH access to the VMs in its own
+# namespace (reachable by their Service name via cluster DNS) and is given
+# ANSIBLE_USER/ANSIBLE_PASSWORD for auth — it does not receive BASTION_HOST
+# (that's only injected into the setup init container).
 
 - name: Build inventory
   hosts: localhost
   gather_facts: false
   tasks:
-    - name: Add bastion host
+    - name: Add rhel VM host
       ansible.builtin.add_host:
-        name: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
-        ansible_ssh_host: "{{ lookup('ansible.builtin.env', 'BASTION_HOST') }}"
+        name: rhel
+        ansible_ssh_host: rhel
         ansible_ssh_port: "{{ lookup('ansible.builtin.env', 'BASTION_PORT') }}"
-        ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'BASTION_USER') }}"
-        ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'BASTION_PASSWORD') }}"
+        ansible_ssh_user: "{{ lookup('ansible.builtin.env', 'ANSIBLE_USER') }}"
+        ansible_ssh_pass: "{{ lookup('ansible.builtin.env', 'ANSIBLE_PASSWORD') }}"
 
-- name: E2E - solve and validate all modules
+- name: E2E - run scripts in order
   hosts: all:!localhost
   gather_facts: false
   become: true
   vars:
-    runtime_path: "{{ playbook_dir }}/../runtime-automation"
-    _ui_config: "{{ lookup('file', playbook_dir ~ '/../ui-config.yml') | from_yaml }}"
-    modules_in_order: "{{ _ui_config.antora.modules | map(attribute='name') | list }}"
+    scripts_path: "{{ playbook_dir }}/scripts"
+    scripts_in_order:
+      - module-2-solve
+      - module-2-validation
+      - module-3-solve
+      - module-3-validation
   tasks:
-    - name: "Run solve then validation for each module"
+    - name: "Run each script in order"
       ansible.builtin.include_tasks: tasks/run_script.yml
-      loop: >-
-        {{
-          modules_in_order
-          | product(['solve', 'validation'])
-          | list
-        }}
+      loop: "{{ scripts_in_order }}"
       loop_control:
-        loop_var: _module_stage
-      vars:
-        module_name: "{{ _module_stage[0] }}"
-        stage_name: "{{ _module_stage[1] }}"
+        loop_var: script_name
